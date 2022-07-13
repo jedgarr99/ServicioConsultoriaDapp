@@ -1,0 +1,684 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta http-equiv="X-UA-Compatible" content="ie=edge">
+    <title>Tablero del despacho</title>
+    <link rel="stylesheet" type="text/css" href="main.css">
+    <script src="./../node_modules/web3/dist/web3.min.js"></script>
+</head>
+<body>
+    <div class="container">
+        <h1>Tablero del Despacho de Consultoria</h1>
+        <h2 id="despacho"></h2>
+
+		<label for="direccionConsultor" class="col-lg-2 control-label">Direccion Ethereum del Consultor</label>
+        <input id="direccionConsultor" type="text">
+
+        <label for="despConsultor" class="col-lg-2 control-label">Consultor</label>
+        <input id="despConsultor" type="text">
+
+        <label for="despServicio" class="col-lg-2 control-label">Servicio</label>
+        <input id="despServicio" type="text">
+
+        <label for="horas" class="col-lg-2 control-label">Horas servicio</label>
+        <input id="horas" type="text">
+
+        <button id="button">Actualiza servicio</button>
+		<button id="button2">Mostrar ultimo servicio</button>
+    </div>
+    <script src="https://code.jquery.com/jquery-3.2.1.slim.min.js"></script>
+    <script>
+
+
+    // Actualizar estas variables con SUS PROPIOS DATOS
+    //var miNumeroDeCuenta = '0x39eA8B6542C2731B39B60f075138A99eb16D7b9A';
+    //var miDreccionDeContrato = '0xBe6fd26e96C15e1468D9f285D4F24A55BEC6f5ee';
+
+	var miNumeroDeCuenta = '0xAa359630fb1C3e83bdE12Ed21C861330Dd43982D';
+    var miDreccionDeContrato = '0x743dcFa2b0c4E487B078974d408B7F73D89eC36a';
+
+
+
+
+    // Crear una referencia web3
+	
+    //web3 = new Web3(new Web3.providers.HttpProvider("https://rinkeby.infura.io/v3/4a1e859b18374b0ca16fdfe34606eb80"));
+	web3 = new Web3(new Web3.providers.HttpProvider("http://127.0.0.1:8545"));
+	var direccion= '0x8A753747A1Fa494EC906cE90E9f37563A8AF630e';
+
+
+    // Checar balance y desplegar resultado
+    web3.eth.getBalance(miNumeroDeCuenta).then(balance => console.log(balance));
+
+    // Crear referencia al smart contract. ABI
+    var despContrato = new web3.eth.Contract([
+	{
+		"inputs": [],
+		"stateMutability": "nonpayable",
+		"type": "constructor"
+	},
+	{
+		"anonymous": false,
+		"inputs": [
+			{
+				"indexed": true,
+				"internalType": "address",
+				"name": "owner",
+				"type": "address"
+			},
+			{
+				"indexed": true,
+				"internalType": "address",
+				"name": "spender",
+				"type": "address"
+			},
+			{
+				"indexed": false,
+				"internalType": "uint256",
+				"name": "value",
+				"type": "uint256"
+			}
+		],
+		"name": "Approval",
+		"type": "event"
+	},
+	{
+		"inputs": [
+			{
+				"internalType": "address",
+				"name": "spender",
+				"type": "address"
+			},
+			{
+				"internalType": "uint256",
+				"name": "amount",
+				"type": "uint256"
+			}
+		],
+		"name": "approve",
+		"outputs": [
+			{
+				"internalType": "bool",
+				"name": "",
+				"type": "bool"
+			}
+		],
+		"stateMutability": "nonpayable",
+		"type": "function"
+	},
+	{
+		"inputs": [
+			{
+				"internalType": "bool",
+				"name": "siAutorizo",
+				"type": "bool"
+			}
+		],
+		"name": "autorizarPago",
+		"outputs": [],
+		"stateMutability": "payable",
+		"type": "function"
+	},
+	{
+		"inputs": [],
+		"name": "cobrarServicio",
+		"outputs": [],
+		"stateMutability": "nonpayable",
+		"type": "function"
+	},
+	{
+		"inputs": [
+			{
+				"internalType": "address",
+				"name": "spender",
+				"type": "address"
+			},
+			{
+				"internalType": "uint256",
+				"name": "subtractedValue",
+				"type": "uint256"
+			}
+		],
+		"name": "decreaseAllowance",
+		"outputs": [
+			{
+				"internalType": "bool",
+				"name": "",
+				"type": "bool"
+			}
+		],
+		"stateMutability": "nonpayable",
+		"type": "function"
+	},
+	{
+		"inputs": [
+			{
+				"internalType": "address",
+				"name": "spender",
+				"type": "address"
+			},
+			{
+				"internalType": "uint256",
+				"name": "addedValue",
+				"type": "uint256"
+			}
+		],
+		"name": "increaseAllowance",
+		"outputs": [
+			{
+				"internalType": "bool",
+				"name": "",
+				"type": "bool"
+			}
+		],
+		"stateMutability": "nonpayable",
+		"type": "function"
+	},
+	{
+		"inputs": [
+			{
+				"internalType": "address",
+				"name": "_addConsultor",
+				"type": "address"
+			},
+			{
+				"internalType": "string",
+				"name": "_consultor",
+				"type": "string"
+			},
+			{
+				"internalType": "string",
+				"name": "_servConsultoria",
+				"type": "string"
+			},
+			{
+				"internalType": "uint256",
+				"name": "_horas",
+				"type": "uint256"
+			}
+		],
+		"name": "setServicioActual",
+		"outputs": [],
+		"stateMutability": "nonpayable",
+		"type": "function"
+	},
+	{
+		"inputs": [
+			{
+				"internalType": "address",
+				"name": "to",
+				"type": "address"
+			},
+			{
+				"internalType": "uint256",
+				"name": "amount",
+				"type": "uint256"
+			}
+		],
+		"name": "transfer",
+		"outputs": [
+			{
+				"internalType": "bool",
+				"name": "",
+				"type": "bool"
+			}
+		],
+		"stateMutability": "nonpayable",
+		"type": "function"
+	},
+	{
+		"anonymous": false,
+		"inputs": [
+			{
+				"indexed": true,
+				"internalType": "address",
+				"name": "from",
+				"type": "address"
+			},
+			{
+				"indexed": true,
+				"internalType": "address",
+				"name": "to",
+				"type": "address"
+			},
+			{
+				"indexed": false,
+				"internalType": "uint256",
+				"name": "value",
+				"type": "uint256"
+			}
+		],
+		"name": "Transfer",
+		"type": "event"
+	},
+	{
+		"inputs": [
+			{
+				"internalType": "address",
+				"name": "from",
+				"type": "address"
+			},
+			{
+				"internalType": "address",
+				"name": "to",
+				"type": "address"
+			},
+			{
+				"internalType": "uint256",
+				"name": "amount",
+				"type": "uint256"
+			}
+		],
+		"name": "transferFrom",
+		"outputs": [
+			{
+				"internalType": "bool",
+				"name": "",
+				"type": "bool"
+			}
+		],
+		"stateMutability": "nonpayable",
+		"type": "function"
+	},
+	{
+		"inputs": [
+			{
+				"internalType": "address",
+				"name": "owner",
+				"type": "address"
+			},
+			{
+				"internalType": "address",
+				"name": "spender",
+				"type": "address"
+			}
+		],
+		"name": "allowance",
+		"outputs": [
+			{
+				"internalType": "uint256",
+				"name": "",
+				"type": "uint256"
+			}
+		],
+		"stateMutability": "view",
+		"type": "function"
+	},
+	{
+		"inputs": [
+			{
+				"internalType": "address",
+				"name": "account",
+				"type": "address"
+			}
+		],
+		"name": "balanceOf",
+		"outputs": [
+			{
+				"internalType": "uint256",
+				"name": "",
+				"type": "uint256"
+			}
+		],
+		"stateMutability": "view",
+		"type": "function"
+	},
+	{
+		"inputs": [],
+		"name": "decimals",
+		"outputs": [
+			{
+				"internalType": "uint8",
+				"name": "",
+				"type": "uint8"
+			}
+		],
+		"stateMutability": "view",
+		"type": "function"
+	},
+	{
+		"inputs": [],
+		"name": "getHonorarios",
+		"outputs": [
+			{
+				"internalType": "uint256",
+				"name": "",
+				"type": "uint256"
+			}
+		],
+		"stateMutability": "view",
+		"type": "function"
+	},
+	{
+		"inputs": [],
+		"name": "getLatestEthPrice",
+		"outputs": [
+			{
+				"internalType": "uint80",
+				"name": "",
+				"type": "uint80"
+			},
+			{
+				"internalType": "int256",
+				"name": "",
+				"type": "int256"
+			},
+			{
+				"internalType": "uint256",
+				"name": "",
+				"type": "uint256"
+			},
+			{
+				"internalType": "uint256",
+				"name": "",
+				"type": "uint256"
+			},
+			{
+				"internalType": "uint80",
+				"name": "",
+				"type": "uint80"
+			}
+		],
+		"stateMutability": "view",
+		"type": "function"
+	},
+	{
+		"inputs": [],
+		"name": "getOnlyEthPrice",
+		"outputs": [
+			{
+				"internalType": "int256",
+				"name": "",
+				"type": "int256"
+			}
+		],
+		"stateMutability": "view",
+		"type": "function"
+	},
+	{
+		"inputs": [
+			{
+				"internalType": "address",
+				"name": "direccion",
+				"type": "address"
+			}
+		],
+		"name": "getServicioActual",
+		"outputs": [
+			{
+				"internalType": "string",
+				"name": "",
+				"type": "string"
+			},
+			{
+				"internalType": "string",
+				"name": "",
+				"type": "string"
+			},
+			{
+				"internalType": "uint256",
+				"name": "",
+				"type": "uint256"
+			},
+			{
+				"internalType": "bool",
+				"name": "",
+				"type": "bool"
+			}
+		],
+		"stateMutability": "view",
+		"type": "function"
+	},
+	{
+		"inputs": [],
+		"name": "getUltimoServicioPorPagar",
+		"outputs": [
+			{
+				"components": [
+					{
+						"internalType": "string",
+						"name": "consultor",
+						"type": "string"
+					},
+					{
+						"internalType": "string",
+						"name": "servConsultoria",
+						"type": "string"
+					},
+					{
+						"internalType": "uint256",
+						"name": "horas",
+						"type": "uint256"
+					},
+					{
+						"internalType": "bool",
+						"name": "pagado",
+						"type": "bool"
+					}
+				],
+				"internalType": "struct Servicios.ServicioConsultoria",
+				"name": "",
+				"type": "tuple"
+			}
+		],
+		"stateMutability": "view",
+		"type": "function"
+	},
+	{
+		"inputs": [
+			{
+				"internalType": "address",
+				"name": "",
+				"type": "address"
+			}
+		],
+		"name": "mappingServicios",
+		"outputs": [
+			{
+				"internalType": "string",
+				"name": "consultor",
+				"type": "string"
+			},
+			{
+				"internalType": "string",
+				"name": "servConsultoria",
+				"type": "string"
+			},
+			{
+				"internalType": "uint256",
+				"name": "horas",
+				"type": "uint256"
+			},
+			{
+				"internalType": "bool",
+				"name": "pagado",
+				"type": "bool"
+			}
+		],
+		"stateMutability": "view",
+		"type": "function"
+	},
+	{
+		"inputs": [],
+		"name": "name",
+		"outputs": [
+			{
+				"internalType": "string",
+				"name": "",
+				"type": "string"
+			}
+		],
+		"stateMutability": "view",
+		"type": "function"
+	},
+	{
+		"inputs": [],
+		"name": "owner",
+		"outputs": [
+			{
+				"internalType": "address",
+				"name": "",
+				"type": "address"
+			}
+		],
+		"stateMutability": "view",
+		"type": "function"
+	},
+	{
+		"inputs": [
+			{
+				"internalType": "uint256",
+				"name": "",
+				"type": "uint256"
+			}
+		],
+		"name": "porPagar",
+		"outputs": [
+			{
+				"internalType": "address",
+				"name": "",
+				"type": "address"
+			}
+		],
+		"stateMutability": "view",
+		"type": "function"
+	},
+	{
+		"inputs": [],
+		"name": "serv",
+		"outputs": [
+			{
+				"internalType": "string",
+				"name": "consultor",
+				"type": "string"
+			},
+			{
+				"internalType": "string",
+				"name": "servConsultoria",
+				"type": "string"
+			},
+			{
+				"internalType": "uint256",
+				"name": "horas",
+				"type": "uint256"
+			},
+			{
+				"internalType": "bool",
+				"name": "pagado",
+				"type": "bool"
+			}
+		],
+		"stateMutability": "view",
+		"type": "function"
+	},
+	{
+		"inputs": [],
+		"name": "symbol",
+		"outputs": [
+			{
+				"internalType": "string",
+				"name": "",
+				"type": "string"
+			}
+		],
+		"stateMutability": "view",
+		"type": "function"
+	},
+	{
+		"inputs": [],
+		"name": "totalSupply",
+		"outputs": [
+			{
+				"internalType": "uint256",
+				"name": "",
+				"type": "uint256"
+			}
+		],
+		"stateMutability": "view",
+		"type": "function"
+	}
+]);
+
+
+    despContrato.options.address = miDreccionDeContrato;
+    // Desplegar información del contrato   
+    console.log(despContrato);
+    // Desplegar informacion del servicio.
+    
+	const setContrato =async (despContrato,direccion, elConsultor, elServicio, lasHoras)=>{
+     await despContrato.methods.setServicioActual(direccion, elConsultor, elServicio, lasHoras).send({from:miNumeroDeCuenta});
+  }
+        // Actualizar servicio con información del usuario
+        $("#button").click(
+		  async function () {
+        // Toma info del servicio de la Interfaz
+		direccion =$("#direccionConsultor").val();
+		console.log("La direccion es: " + direccion);
+        var elConsultor = $("#despConsultor").val();
+        console.log("El Consultor es: " + elConsultor);
+        var elServicio = $("#despServicio").val();
+        console.log("El Servicio es: " + elServicio);
+        var lasHoras = $("#horas").val();
+        console.log("El numero de horas es: " + lasHoras);
+        setContrato(despContrato,direccion, elConsultor, elServicio, lasHoras);
+        // Pass collected info to SetAlbum contract method
+         /* await  despContrato.methods.setServicioActual(direccion, elConsultor, elServicio, lasHoras).send({from:miNumeroDeCuenta}).then(response => {
+    console.log(response);
+}).catch(e => {
+    console.log(e);
+});*/
+    });
+
+
+
+
+
+	/*
+	$("#button2").click(function () {
+        // Toma info del servicio de la Interfaz
+		direccion = $("#direccionConsultor").val();
+		
+
+		await despContrato.methods.getServicioActual(direccion).call(function (error, result) {
+        // Desplegar consultor, servicio y horas
+        if (!error) {
+            $("#despacho").html(result[0].consultor );
+            console.log(result);
+        } else
+            console.error(error);
+    });
+        
+        // Pass collected info to SetAlbum contract method
+       
+    });
+*/
+
+	$("#button2").click(
+	
+	  function () {
+        // Toma info del servicio de la Interfaz
+		direccion = $("#direccionConsultor").val();
+		
+
+		  despContrato.methods.getServicioActual(direccion).call(function (error, result) {
+        // Desplegar consultor, servicio y horas
+        if (!error) {
+            //$("#despacho").html(result[0].consultor );
+			$("#despacho").html(result[0] + ' - ' + result[1] + ' (' + result[2] + ' horas)');
+            console.log(result);
+        } else
+            console.error(error);
+    });
+        
+        // Pass collected info to SetAlbum contract method
+       
+    }	
+	);
+
+
+    </script>
+</body>
+</html>
+

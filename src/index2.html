@@ -1,0 +1,170 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta http-equiv="X-UA-Compatible" content="ie=edge">
+    <title>Tablero del despacho</title>
+    <link rel="stylesheet" type="text/css" href="main.css">
+    <script src="./../node_modules/web3/dist/web3.min.js"></script>
+</head>
+<body>
+
+    <div class="container">
+        <h1>Tablero del Despacho de Consultoria</h1>
+        <h2 id="despacho"></h2>
+        <label for="despConsultor" class="col-lg-2 control-
+label">Consultor</label>
+        <input id="despConsultor" type="text">
+        <label for="despServicio" class="col-lg-2 control-
+label">Servicio</label>
+        <input id="despServicio" type="text">
+        <label for="horas" class="col-lg-2 control-label">Horas servicio</label>
+        <input id="horas" type="text">
+        <button id="button">Actualiza servicio</button>
+    </div>
+    <script src="https://code.jquery.com/jquery-3.2.1.slim.min.js"></script>
+    <script>
+    // Actualizar estas variables con SUS PROPIOS DATOS
+    var miNumeroDeCuenta = '0xb5Cf26785dcD8183bEB8dF1ce993a5BBa5caB45f';
+    var miDreccionDeContrato = '0x6567AA8DB40eB1F9f6118897984E9195c4561044';
+    // Crear una referencia web3
+    web3 = new Web3(new Web3.providers.HttpProvider("http://127.0.0.1:8545"));
+    // Checar balance y desplegar resultado
+    web3.eth.getBalance(miNumeroDeCuenta).then(balance => console.log(balance));
+    // Crear referencia al smart contract.
+    var despContrato = new web3.eth.Contract([
+	{
+		"inputs": [
+			{
+				"internalType": "string",
+				"name": "_consultor",
+				"type": "string"
+			},
+			{
+				"internalType": "string",
+				"name": "_servConsultoria",
+				"type": "string"
+			},
+			{
+				"internalType": "uint256",
+				"name": "_horas",
+				"type": "uint256"
+			}
+		],
+		"name": "setServicio",
+		"outputs": [],
+		"stateMutability": "nonpayable",
+		"type": "function"
+	},
+	{
+		"inputs": [],
+		"stateMutability": "nonpayable",
+		"type": "constructor"
+	},
+	{
+		"inputs": [],
+		"name": "consultor",
+		"outputs": [
+			{
+				"internalType": "string",
+				"name": "",
+				"type": "string"
+			}
+		],
+		"stateMutability": "view",
+		"type": "function"
+	},
+	{
+		"inputs": [],
+		"name": "getServicio",
+		"outputs": [
+			{
+				"internalType": "string",
+				"name": "",
+				"type": "string"
+			},
+			{
+				"internalType": "string",
+				"name": "",
+				"type": "string"
+			},
+			{
+				"internalType": "uint256",
+				"name": "",
+				"type": "uint256"
+			}
+		],
+		"stateMutability": "view",
+		"type": "function"
+	},
+	{
+		"inputs": [],
+		"name": "horas",
+		"outputs": [
+			{
+				"internalType": "uint256",
+				"name": "",
+				"type": "uint256"
+			}
+		],
+		"stateMutability": "view",
+		"type": "function"
+	},
+	{
+		"inputs": [],
+		"name": "owner",
+		"outputs": [
+			{
+				"internalType": "address",
+				"name": "",
+				"type": "address"
+			}
+		],
+		"stateMutability": "view",
+		"type": "function"
+	},
+	{
+		"inputs": [],
+		"name": "servConsultoria",
+		"outputs": [
+			{
+				"internalType": "string",
+				"name": "",
+				"type": "string"
+			}
+		],
+		"stateMutability": "view",
+		"type": "function"
+	}
+]);
+    despContrato.options.address = miDreccionDeContrato;
+    // Desplegar información del contrato   
+    console.log(despContrato);
+    // Desplegar informacion del servicio.
+    despContrato.methods.getServicio().call(function (error, result) {
+        // Desplegar consultor, servicio y horas
+        if (!error) {
+            $("#despacho").html(result[0] + ' - ' + result[1] + ' (' + result[2] 
++ ' horas)');
+            console.log(result);
+        } else
+            console.error(error);
+    });
+
+    // Actualizar servicio con información del usuario
+    $("#button").click(function () {
+        // Toma info del servicio de la Interfaz
+        var elConsultor = $("#despConsultor").val();
+        console.log("El Consultor es: " + elConsultor);
+        var elServicio = $("#despServicio").val();
+        console.log("El Servicio es: " + elServicio);
+        var lasHoras = $("#horas").val();
+        console.log("El numero de horas es: " + lasHoras);
+        
+        // Pass collected info to SetAlbum contract method
+        despContrato.methods.setServicio(elConsultor, elServicio, lasHoras).send({from:miNumeroDeCuenta});
+    });
+    </script>
+</body>
+</html>
